@@ -37,7 +37,15 @@ module.exports = {
         css_summer: './Themes/summer.scss',
         css_autumn_orange: './Themes/autumn_orange.scss',
         css_autumn_red: './Themes/autumn_red.scss',
-        css_singleday: './Themes/singleday_pink.scss'
+        css_singleday: './Themes/singleday_pink.scss',
+        css_mid_autumn:'./Themes/mid_autumn.scss',
+        css_mid_autumn_light:'./Themes/mid_autumn_light.scss',
+        css_light_snow_dark:'./Themes/light_snow_dark.scss',
+        css_light_snow_light:'./Themes/light_snow_light.scss',
+        css_spring_festival_dark:'./Themes/spring_festival_dark.scss',
+        css_spring_festival_light:'./Themes/spring_festival_light.scss',
+        css_qingming:'./Themes/qingming.scss',
+        css_dragon_boat_festival:'./Themes/dragon_boat_festival.scss',
     },
     
     output: {
@@ -51,8 +59,6 @@ module.exports = {
     
     externals: {
         'jquery': '$',
-        'editor.md': 'editormd',
-        'codemirror': 'CodeMirror',
     },
 
     plugins: [
@@ -71,8 +77,6 @@ module.exports = {
 
             { from: 'node_modules/jquery/dist', to: 'static/scripts/lib/jquery/' },
             { from: 'node_modules/font-awesome', to: 'static/content/font-awesome/' },
-            { from: 'node_modules/editor.md', to: 'static/scripts/lib/editor.md/' },
-            { from: 'node_modules/codemirror', to: 'static/scripts/lib/editor.md/lib/codemirror/' },
             { from: 'node_modules/spectrum-colorpicker/spectrum.js', to: 'static/scripts/lib/spectrum/spectrum.js' },
             { from: 'node_modules/dplayer/dist/DPlayer.min.css', to: 'static/content/DPlayer.min.css' },
             { from: 'node_modules/aplayer/dist/APlayer.min.css', to: 'static/content/APlayer.min.css' },
@@ -90,7 +94,7 @@ module.exports = {
     devServer: {
         // contentBase: path.resolve(__dirname, "wwwroot"),
         historyApiFallback: true,
-        port: 8082,
+        port: 8083,
         host: '0.0.0.0',
 
         // proxy: {

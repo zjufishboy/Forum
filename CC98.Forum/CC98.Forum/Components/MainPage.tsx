@@ -516,16 +516,20 @@ export class MainPageCountComponent extends React.Component<{ data }, {}> {
   render() {
     const data = this.props.data;
     return <div className="mainPageCount">
-      <div className="mainPageTitle2">
+      <div className="mainPageTitle1">
         <div className="mainPageTitleRow">
           <i className="fa fa-volume-up"></i>
           <div className="mainPageTitleText">论坛统计</div>
         </div>
       </div>
-      <div className="mainPageCountContent" style={{ height: "10rem" }}>
+      <div className="mainPageCountContent">
         <div className="mainPageCountRow">
           <div className="mainPageCountTitle">今日帖数</div>
           <div className="mainPageCountTitle">{data.todayCount || 0}</div>
+        </div>
+        <div className="mainPageCountRow">
+          <div className="mainPageCountTitle">今日主题数</div>
+          <div className="mainPageCountTitle">{data.todayTopicCount || 0}</div>
         </div>
         <div className="mainPageCountRow">
           <div className="mainPageCountTitle">论坛总主题数</div>
@@ -570,6 +574,7 @@ export class MainPageCountProps {
 
   //属性
   todayCount: number;
+  todayTopicCount:number;
   topicCount: number;
   postCount: number;
   onlineUserCount: number;
@@ -577,15 +582,40 @@ export class MainPageCountProps {
   lastUserName: string;
 
   //构造方法
-  constructor(todayCount, topicCount, postCount, onlineUserCount, userCount, lastUserName) {
+  constructor(todayCount,todayTopicCount, topicCount, postCount, onlineUserCount, userCount, lastUserName) {
     this.todayCount = todayCount;
+    this.todayTopicCount = todayTopicCount;
     this.topicCount = topicCount;
     this.postCount = postCount;
     this.onlineUserCount = onlineUserCount;
     this.userCount = userCount;
     this.lastUserName = lastUserName;
   }
+}
 
+/**
+ * 小程序二维码
+ */
+export class QRCode extends React.Component<{}, {}>{
+  render() {
+    return <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        marginTop: "2rem",
+      }}
+    >
+      <div className="mainPageTitle2">
+        <div className="mainPageTitleRow">
+          <i className="fa fa-volume-up"></i>
+          <div className="mainPageTitleText">CC98小程序</div>
+        </div>
+      </div>
+      <div style={{ marginTop: "1rem" }} >
+        <img style={{ width: "100%" }} src="/static/images/QRCode.png"></img>
+      </div>
+    </div>
+  }
 }
 
 /**
@@ -655,7 +685,7 @@ export class MainPage extends React.Component<{}, { data }> {
     let fullTimeJob: MainPageTopicMoreProps[] = new Array({ name: "更多", url: "/board/235" });
     let partTimeJob: MainPageTopicMoreProps[] = new Array({ name: "更多", url: "/board/459" });
 
-    let count: MainPageCountProps = new MainPageCountProps(data.todayCount, data.topicCount, data.postCount, data.onlineUserCount, data.userCount, data.lastUserName);
+    let count: MainPageCountProps = new MainPageCountProps(data.todayCount,data.todayTopicCount, data.topicCount, data.postCount, data.onlineUserCount, data.userCount, data.lastUserName);
 
     return <div className="mainPage">
       <DocumentTitle title={`CC98论坛`} />
@@ -667,14 +697,12 @@ export class MainPage extends React.Component<{}, { data }> {
           <MainPageTopicComponent data={data.schoolEvent} name="校园活动" fetchUrl="/topic/school-event" style="blue" mores={[]} />
         </div>
         <div className="row" style={{ justifyContent: "space-between" }}>
-
           <MainPageTopicComponent data={data.academics} name="学术信息" fetchUrl="/topic/academics" style="black" mores={[]} />
           <MainPageTopicComponent data={data.study} name="学习园地" fetchUrl="/topic/study" style="black" mores={study} />
         </div>
         <div className="row" style={{ justifyContent: "space-between" }}>
           <MainPageTopicComponent data={data.emotion} name="感性·情感" fetchUrl="/topic/emotion" style="blue" mores={emotion} />
           <MainPageTopicComponent data={data.fleaMarket} name="跳蚤市场" fetchUrl="/topic/flea-market" style="blue" mores={fleaMarket} />
-
         </div>
         <div className="row" style={{ justifyContent: "space-between" }}>
           <MainPageTopicComponent data={data.fullTimeJob} name="求职广场" fetchUrl="/topic/full-time-job" style="black" mores={fullTimeJob} />
@@ -686,6 +714,7 @@ export class MainPage extends React.Component<{}, { data }> {
         <SchoolNewsComponent data={data.schoolNews} />
         <AdsComponent />
         <MainPageCountComponent data={count} />
+        <QRCode />
       </div>
     </div>;
   }

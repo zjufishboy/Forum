@@ -199,7 +199,7 @@ export default class extends React.Component<Props, State> {
           />
           <UbbContainer
             code={content}
-            options={{ ...new UbbCodeOptions(), allowLightbox: true }}
+            options={{ ...new UbbCodeOptions(), allowToolbox: true }}
           />
         </Modal>
         <Collapse
@@ -213,11 +213,11 @@ export default class extends React.Component<Props, State> {
             header={shortHand}
             style={customPanelStyle}
           >
-            <Divider />
-            <UbbContainer
-              code={data.bigPaper}
-              options={{ ...new UbbCodeOptions(), allowLightbox: true }}
-            />
+            {data.bigPaper && <> <Divider />
+              <UbbContainer
+                code={data.bigPaper}
+                options={{ ...new UbbCodeOptions(), allowToolbox: true }}
+              /></>}
           </Panel>
         </Collapse>
       </div>

@@ -41,8 +41,7 @@ export class FocusBoardArea extends React.Component<{history}, FocusBoardAreaSta
      */
     async componentDidMount() {
         //给关注版面添加选中效果
-        $('#myFocusUser').removeClass('focus-title-hover');
-        $('#myFocusBoard').addClass('focus-title-hover');
+  
 
         let data = [];
         let token = Utility.getLocalStorage("accessToken");
@@ -79,6 +78,10 @@ export class FocusBoardArea extends React.Component<{history}, FocusBoardAreaSta
             let boardId = this.id.slice(11);
             window.location.href=`/board/${boardId}`;
         });
+
+        $('#myFocusUser').removeClass('focus-title-hover');
+        $("#myFocusFavorite").removeClass("focus-title-hover");
+        $('#myFocusBoard').addClass('focus-title-hover');
     }
 
     
@@ -88,6 +91,7 @@ export class FocusBoardArea extends React.Component<{history}, FocusBoardAreaSta
     }
     
     render() {
+
         return <div>
                     <div className="focus-board-area">
                         <div className="focus-board" id="focusBoard_0">全部帖子</div>

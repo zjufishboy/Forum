@@ -159,11 +159,13 @@ export async function getTopicContent(topicid: number, curPage: number) {
         const usersId = [];
         let usersInfo = [];
         if (content.length === 0) return [];
-        if (content[0].isAnonymous == false) {
-            for (let i in content) {
-                usersId[i] = content[i].userId;
+        for (let j = 0; j < topicNumberInPage; j++) {
+            if (content[j].isAnonymous == false) {
+                for (let i in content) {
+                    usersId[i] = content[i].userId;
+                }
+                usersInfo = await getUsersInfo(usersId);
             }
-            usersInfo = await getUsersInfo(usersId);
         }
         for (let i = 0; i < topicNumberInPage; i++) {
 
@@ -207,7 +209,8 @@ export async function like(topicid, postid, router) {
             store.dispatch(ErrorActions.throwError('UnauthorizedTopic'));
         }
         if (response.status === 403) {
-            store.dispatch(ErrorActions.throwError('OperationForbidden'));
+            // store.dispatch(ErrorActions.throwError('OperationForbidden'));
+            return
         }
         if (response.status === 404) {
             store.dispatch(ErrorActions.throwError('NotFoundTopic'));
@@ -233,7 +236,8 @@ export async function dislike(topicid, postid, router) {
         }
 
         if (response.status === 403) {
-            store.dispatch(ErrorActions.throwError('OperationForbidden'));
+            // store.dispatch(ErrorActions.throwError('OperationForbidden'));
+            return
         }
         if (response.status === 404) {
             store.dispatch(ErrorActions.throwError('NotFoundTopic'));
@@ -328,7 +332,7 @@ export async function getCurUserTopic(topicid: number, userId: number) {
         //store.dispatch(ErrorActions.throwError('Disconnected'));
     }
 }
-export async function getCurUserTopicContent(topicid: number, curPage: number, userName: string, userId: number) {
+export async function getCurUserTopicContent(topicid: number, curPage: number, userId: number) {
     try {
         const topicMessage = await getTopic(topicid);
         let start: number;
@@ -381,8 +385,8 @@ export async function getAllNewTopic(from: number, router) {
          * 一次性可以获取20个主题
          */
         var size = 20;
-        if (from > 80) {
-            size = 100 - from;
+        if (from > 180) {
+            size = 200 - from;
         }
         const headers = await formAuthorizeHeader();
         /**
@@ -441,7 +445,7 @@ export async function getAllNewTopic(from: number, router) {
                 }
             }
             //处理匿名与非匿名主题，非匿名主题用户批量获取信息
-            if (item.userId) {
+            if(!item.isAnonymous){
                 //获取所在版面名称
                 item.boardName = await getBoardName(item.boardId);
                 aTopic.push(item);
@@ -450,7 +454,7 @@ export async function getAllNewTopic(from: number, router) {
             else {
                 item.portraitUrl = '/static/images/_心灵之约.png';
                 item.userName = "匿名用户";
-                item.boardName = "心灵之约";
+                item.boardName = await getBoardName(item.boardId);
                 bTopic.push(item);
             }
         }
@@ -485,7 +489,7 @@ export async function getAllNewTopic(from: number, router) {
 }
 
 /**
- * 获取关注帖子,boardId == -1为关注用户帖子, boardId === 0 为全部关注版面帖子, boardId > 0则为对应版面帖子
+ * 获取关注帖子,borderId == -2 为收藏的帖子，boardId == -1为关注用户帖子, boardId === 0 为全部关注版面帖子, boardId > 0则为对应版面帖子
  * @param curPage
  */
 export async function getFocusTopic(boardId: number, boardName: string, from: number, router) {
@@ -499,8 +503,8 @@ export async function getFocusTopic(boardId: number, boardName: string, from: nu
          * 一次性可以获取20个主题
          */
         var size = 20;
-        if (from > 80) {
-            size = 100 - from;
+        if (from > 180) {
+            size = 200 - from;
         }
         const headers = await formAuthorizeHeader();
         /**
@@ -512,6 +516,9 @@ export async function getFocusTopic(boardId: number, boardName: string, from: nu
         }
         else if (boardId === 0) {
             response = await cc98Fetch(`/me/custom-board/topic?from=${from}&size=${size}`, { headers });
+        }
+        else if (boardId === -2){
+            response = await cc98Fetch(`/topic/me/favorite?from=${from}&size=${size}&order=1`, { headers });
         }
         else {
             response = await cc98Fetch(`/board/${boardId}/topic?from=${from}&size=${size}`, { headers });
@@ -567,7 +574,7 @@ export async function getFocusTopic(boardId: number, boardName: string, from: nu
                 }
             }
             //处理匿名与非匿名主题，非匿名主题批量获取信息
-            if (item.userId) {
+            if (!item.isAnonymous) {
                 //获取所在版面名称
                 item.boardName = await getBoardName(item.boardId);
                 aTopic.push(item);
@@ -576,7 +583,7 @@ export async function getFocusTopic(boardId: number, boardName: string, from: nu
             else {
                 item.portraitUrl = '/static/images/_心灵之约.png';
                 item.userName = "匿名用户";
-                item.boardName = "心灵之约";
+                item.boardName = await getBoardName(item.boardId);
                 bTopic.push(item);
             }
         }
@@ -614,6 +621,15 @@ export async function getFocusTopic(boardId: number, boardName: string, from: nu
 import { boardInfo } from './Utility/boardInfoJson'
 import { UserInfo } from './States/AppState';
 
+export function syncGetBoardNameById(boardId) {
+
+    for (let item of boardInfo) {
+        if (boardId === item.id) {
+            return item.name;
+        }
+    }
+    return '未知版面'
+}
 export async function getBoardName(boardId: number) {
 
     for (let item of boardInfo) {
@@ -1130,12 +1146,41 @@ export async function getCurUserTotalReplyPage(topicId, userId) {
         //store.dispatch(ErrorActions.throwError('Disconnected'));
     }
 }
-export async function getAnonymousTraceTopicsCount(topicId, postId) {
+export async function getTraceTopicsCount(topicId, postId) {
     try {
         const headers = await formAuthorizeHeader();
-        const response = await cc98Fetch(`/post/topic/anonymous/user?topicid=${topicId}&postid=${postId}&from=0&size=1`, { headers });
+        const response = await cc98Fetch(`/post/topic/specific-user?topicid=${topicId}&postid=${postId}&from=0&size=1`, { headers });
         const data = await response.json();
         return data[0].count % 10 === 0 ? data[0].count / 10 : (data[0].count - data[0].count % 10) / 10 + 1;
+
+    } catch (e) {
+        //store.dispatch(ErrorActions.throwError('Disconnected'));
+    }
+}
+export async function getTraceTopics(topicId, postId, page) {
+    const start = (page - 1) * 10;
+    try {
+        const headers = await formAuthorizeHeader();
+        const response = await cc98Fetch(`/post/topic/specific-user?topicid=${topicId}&postid=${postId}&from=${start}&size=10`, { headers });
+        const data = await response.json();
+        if (data[0] && data[0].isAnonymous) {
+            let purl = '/static/images/心灵头像.gif';
+            for (let i in data) {
+                const anonymousUserName = `匿名${data[i].userName.toUpperCase()}`;
+                const userMesJson = { name: anonymousUserName, portraitUrl: purl, id: null, privilege: '匿名用户', popularity: 0, signatureCode: null, postCount: 0, fanCount: 0 };
+                data[i].userInfo = userMesJson;
+                data[i].postId = postId
+            }
+        } else {
+            const userMesJson = await getUserInfo(data[0].userId);
+            for (let i in data) {
+                data[i].userInfo = userMesJson
+                data[i].postId = postId
+            }
+
+        }
+        console.log(data)
+        return data;
 
     } catch (e) {
         //store.dispatch(ErrorActions.throwError('Disconnected'));
@@ -1285,17 +1330,17 @@ export function clickUploadIcon() {
 }
 
 export async function uploadEvent(e) {
-    localStorage.setItem("react-mde-imageurl-status","pending");
+    localStorage.setItem("react-mde-imageurl-status", "pending");
     const files = e.target.files;
     const res = await uploadFile(files[0]);
-    if(res.isSuccess){
+    if (res.isSuccess) {
         const url = res.content;
-        localStorage.setItem("react-mde-imageurl-status","success");
-        localStorage.setItem("react-mde-imageurl",url);
+        localStorage.setItem("react-mde-imageurl-status", "success");
+        localStorage.setItem("react-mde-imageurl", url);
         return url;
-    }else{
-        localStorage.setItem("react-mde-imageurl-status","fail");
-      return "";
+    } else {
+        localStorage.setItem("react-mde-imageurl-status", "fail");
+        return "";
     }
 
     // const baseUrl = getApiUrl();
@@ -1650,7 +1695,11 @@ export async function getBoards() {
         const url = '/board/all';
         const response = await cc98Fetch(url);
         const data = await response.json();
-        localStorage.setItem("boardsInfo", JSON.stringify(data));
+        setLocalStorage("boardsInfo", data, 3600);
+        return data
+    } else {
+        const boards = getLocalStorage('boardsInfo');
+        return boards
     }
 }
 export async function getBoardId(boardName: string) {
@@ -1744,20 +1793,10 @@ export async function getMessageSystem(from: number, size: number, router) {
         return [];
     }
 
-    //把postId统计存到一个数组里，然后批量查询一下，从而得到每个楼层信息和回复者信息
-    let postsId = [];
-    for (let item of newTopic) {
-        if (item.postId) {
-            postsId.push(item.postId);
-        }
-    }
-    //console.log("获取的postsId", postsId);
-    let postsInfo = await getBasicPostsInfo(postsId);
     //补充楼层信息
     for (let i in newTopic) {
         if (newTopic[i].postId) {
-            let postInfo = getThisPostInfo(newTopic[i].postId, postsInfo);
-            newTopic[i].floor = postInfo.floor;
+            newTopic[i].floor = newTopic[i].postBasicInfo.floor;
         }
         else {
             newTopic[i].floor = 0;
@@ -1797,17 +1836,12 @@ export async function getMessageResponse(from: number, size: number, router) {
         }
         let newTopic = await response.json();
         //把postId、topicId分别统计存到一个数组里，然后批量查询一下
-        let postsId = [];
         let topicsId = [];
         for (let item of newTopic) {
-            if (item.postId) {
-                postsId.push(item.postId);
-            }
             if (item.topicId) {
                 topicsId.push(item.topicId);
             }
         }
-        let postsInfo = await getBasicPostsInfo(postsId);
         let topicsInfo = await getBasicTopicsInfo(topicsId);
         //补充帖子标题，版面id和版面名称信息
         if (newTopic) {
@@ -1820,10 +1854,9 @@ export async function getMessageResponse(from: number, size: number, router) {
                 }
                 //获取楼层信息和回复者信息
                 if (newTopic[i].postId) {
-                    let postInfo = getThisPostInfo(newTopic[i].postId, postsInfo);
-                    newTopic[i].floor = postInfo.floor;
-                    newTopic[i].userId = postInfo.userId;
-                    newTopic[i].userName = postInfo.userName;
+                    newTopic[i].floor = newTopic[i].postBasicInfo.floor;
+                    newTopic[i].userId = newTopic[i].postBasicInfo.userId;
+                    newTopic[i].userName = newTopic[i].postBasicInfo.userName;
                 }
                 else {
                     newTopic[i].floor = 1;
@@ -1838,6 +1871,8 @@ export async function getMessageResponse(from: number, size: number, router) {
         //store.dispatch(ErrorActions.throwError('Disconnected'));
     }
 }
+
+
 
 //获取@我的通知
 export async function getMessageAttme(from: number, size: number, router) {
@@ -1871,17 +1906,12 @@ export async function getMessageAttme(from: number, size: number, router) {
         let newTopic = await response.json();
         //console.log("获取到的新@数据", newTopic);
         //把postId、topicId分别统计存到一个数组里，然后批量查询一下
-        let postsId = [];
         let topicsId = [];
         for (let item of newTopic) {
-            if (item.postId) {
-                postsId.push(item.postId);
-            }
             if (item.topicId) {
                 topicsId.push(item.topicId);
             }
         }
-        let postsInfo = await getBasicPostsInfo(postsId);
         let topicsInfo = await getBasicTopicsInfo(topicsId);
         //补充帖子标题，版面id和版面名称信息
         if (newTopic) {
@@ -1894,10 +1924,9 @@ export async function getMessageAttme(from: number, size: number, router) {
                 }
                 //获取楼层信息和回复者信息
                 if (newTopic[i].postId) {
-                    let postInfo = getThisPostInfo(newTopic[i].postId, postsInfo);
-                    newTopic[i].floor = postInfo.floor;
-                    newTopic[i].userId = postInfo.userId;
-                    newTopic[i].userName = postInfo.userName;
+                    newTopic[i].floor = newTopic[i].postBasicInfo.floor;
+                    newTopic[i].userId = newTopic[i].postBasicInfo.userId;
+                    newTopic[i].userName = newTopic[i].postBasicInfo.userName;
                 }
                 else {
                     newTopic[i].floor = 1;
@@ -1912,6 +1941,8 @@ export async function getMessageAttme(from: number, size: number, router) {
         //store.dispatch(ErrorActions.throwError('Disconnected'));
     }
 }
+
+
 export async function plus1(topicId, postId, reason) {
     const url = `/post/${postId}/rating`;
     const headers = await formAuthorizeHeader();
@@ -1926,9 +1957,9 @@ export async function plus1(topicId, postId, reason) {
         case 401:
             return 'not allowed';
         case 403:
-            if (await response.text() === 'you_cannot_rate')
-                return 'not allowed';
-            else
+            // if (await response.text() === 'you_cannot_rate')
+            //     return 'not allowed';
+            // else
                 return 'already';
         case 500:
             return 'server error';
@@ -1948,9 +1979,9 @@ export async function minus1(topicId, postId, reason) {
         case 401:
             return 'not allowed';
         case 403:
-            if (await response.text() === 'you_cannot_rate')
-                return 'not allowed';
-            else
+            // if (await response.text() === 'you_cannot_rate')
+            //     return 'not allowed';
+            // else
                 return 'already';
         case 500:
             return 'server error';
@@ -2438,17 +2469,24 @@ export async function getTagInfo() {
     if (getLocalStorage("tagInfo")) {
         return getLocalStorage("tagInfo");
     } else {
-        const url = `/config/global/alltag`;
+        return await getNewTagInfo()
+    }
+}
+export async function getNewTagInfo() {
+    const url = `/config/global/alltag`;
         const headers = await formAuthorizeHeader();
         const response = await cc98Fetch(url, { headers });
         const data = await response.json();
         setLocalStorage("tagInfo", data);
         return data;
-    }
 }
 export async function getTagIdbyName(name) {
     const tagInfo = await getTagInfo();
     for (let item of tagInfo) {
+        if (item.name === name) return item.id;
+    }
+    const newTagInfo = await getNewTagInfo()
+    for (let item of newTagInfo) {
         if (item.name === name) return item.id;
     }
     return false;
@@ -2690,7 +2728,7 @@ export function atUserUbbUrl(content: string) {
             for (let i = 0; i < atNum; i++) {
                 //给@用户名加上效果
                 let atText = new RegExp(`@${ats[i]}[ ]`, "g");
-                content = content.replace(atText, `[url="/user/name/${ats[i]}"]@${ats[i]} [/url]`);
+                content = content.replace(atText, `[url="/user/name/${encodeURIComponent(ats[i])}"]@${ats[i]} [/url]`);
             }
             return content;
         } else {
@@ -2985,6 +3023,17 @@ export async function getTpUsers(boardId, from, size) {
     const url = `/board/${boardId}/stop-post-user?from=${from}&size=${size}`;
     const headers = await formAuthorizeHeader();
     headers.append("Content-Type", "application/json");
+    const response = await cc98Fetch(url, { headers });
+    return await response.json();
+}
+
+export async function getAnnualReview() {
+    if (!isLogOn()) {
+        store.dispatch(ErrorActions.throwError('LogOut'));
+        return null;
+    }
+    const url = '/me/annual-review'
+    const headers = await formAuthorizeHeader();
     const response = await cc98Fetch(url, { headers });
     return await response.json();
 }

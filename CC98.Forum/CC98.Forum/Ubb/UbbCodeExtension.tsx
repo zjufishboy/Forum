@@ -39,10 +39,41 @@ import EmTagHandler from './EmTagHandler';
 import AcTagHandler from './AcTagHandler';
 import MahjongTagHandler from './MahjongTagHandler';
 import TbTagHandler from './TbTagHandler';
+import BiliTextHandler from './BiliTextHandler';
 import UrlTextHandler from './UrlTextHandler';
 import UrlTextHandler2 from './UrlTextHandler2';
 import NeedReplyTagHandler from './needReplyTagHandler'; 
 import Ms from './MsTagHandler';
+
+/**
+ * 创建一个解析签名档用的engine
+ */
+export function createSignatureEngine(): Ubb.UbbCodeEngine {
+	const engine = new Ubb.UbbCodeEngine();
+
+	engine.handlers.register(BTagHandler);
+	engine.handlers.register(ImageTagHandler);
+	engine.handlers.register(ITagHandler);
+	engine.handlers.register(SizeTagHandler);
+	engine.handlers.register(ColorTagHandler);
+	engine.handlers.register(UrlTagHandler);
+	engine.handlers.register(UTagHandler);
+	engine.handlers.register(DelTagHandler);
+	engine.handlers.register(AudioTagHandler);
+	engine.handlers.register(FontTagHandler);
+	engine.handlers.register(AlignTagHandler);
+	engine.handlers.register(LeftTagHandler);
+	engine.handlers.register(CenterTagHandler);
+	engine.handlers.register(RightTagHandler);
+	engine.handlers.register(TopicTagHandler);
+	engine.handlers.register(PmTagHandler);
+	engine.handlers.register(NoUbbTagHandler);
+
+	engine.handlers.registerText(UrlTextHandler);
+	engine.handlers.registerText(UrlTextHandler2);
+
+	return engine;
+}
 
 /**
  * 创建一个具有所有功能的默认引擎。
@@ -94,6 +125,7 @@ export function createEngine(): Ubb.UbbCodeEngine {
 
 
 	// 以下是文字处理程序，注意文字的处理顺序完全取决于处理程序，请注意控制处理程序的顺序
+	//engine.handlers.registerText(BiliTextHandler);
     engine.handlers.registerText(UrlTextHandler);
     engine.handlers.registerText(UrlTextHandler2);
 

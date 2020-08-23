@@ -42,7 +42,15 @@ var config = {
         css_summer: './Themes/summer.scss',
         css_autumn_orange: './Themes/autumn_orange.scss',
         css_autumn_red: './Themes/autumn_red.scss',
-        css_singleday: './Themes/singleday_pink.scss'
+        css_singleday: './Themes/singleday_pink.scss',
+        css_mid_autumn:'./Themes/mid_autumn.scss',
+        css_mid_autumn_light:'./Themes/mid_autumn_light.scss',
+        css_light_snow_dark:'./Themes/light_snow_dark.scss',
+        css_light_snow_light:'./Themes/light_snow_light.scss',
+        css_spring_festival_dark:'./Themes/spring_festival_dark.scss',
+        css_spring_festival_light:'./Themes/spring_festival_light.scss',
+        css_qingming:'./Themes/qingming.scss',
+        css_dragon_boat_festival:'./Themes/dragon_boat_festival.scss',
     },
     output: {
         path: path.resolve(__dirname, 'wwwroot/'),
@@ -52,7 +60,6 @@ var config = {
     devtool: 'source-map',
     externals: {
         'jquery': '$',
-        'codemirror': 'CodeMirror'
     },
     plugins: [
         new HTMLWebpackPlugin({
@@ -73,9 +80,7 @@ var config = {
             { from: 'node_modules/jquery/dist', to: 'static/scripts/lib/jquery/' },
             { from: 'node_modules/moment', to: 'static/scripts/lib/moment/' },
             { from: 'node_modules/font-awesome', to: 'static/content/font-awesome/' },
-            { from: 'node_modules/codemirror', to: 'static/scripts/lib/editor.md/lib/codemirror/' },
             { from: 'node_modules/spectrum-colorpicker/spectrum.js', to: 'static/scripts/lib/spectrum/spectrum.js' },
-            { from: 'node_modules/editor.md', to: 'static/scripts/lib/editor.md/' },
             { from: 'node_modules/dplayer/dist/DPlayer.min.css', to: 'static/content/DPlayer.min.css' },
             { from: 'node_modules/aplayer/dist/APlayer.min.css', to: 'static/content/APlayer.min.css' },
             { from: 'node_modules/hls.js/dist/hls.min.js', to: 'static/content/hls.min.js' },
