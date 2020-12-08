@@ -219,7 +219,7 @@ class DropDownConnect extends React.Component<props, state> {
             style={{
               ...style,
               overflow: 'hidden',
-              height: this.state.hoverElement === 'message' ? '8rem' : '0'
+              height: this.state.hoverElement === 'message' ? '10rem' : '0'
             }}
           >
             <ul style={{ display: 'inherit' }}>
@@ -261,6 +261,11 @@ class DropDownConnect extends React.Component<props, state> {
                       {this.props.messageCount.messageCount}
                     </div>
                   ) : null}
+                </li>
+              </Link>
+              <Link to="/message/setting">
+                <li>
+                  消息设置
                 </li>
               </Link>
             </ul>
