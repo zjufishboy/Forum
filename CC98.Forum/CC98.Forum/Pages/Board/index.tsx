@@ -43,7 +43,7 @@ export default withRouter(
       return data ? (
         <div className="board-body">
           <Head data={data} page={page || '1'} />
-          <Body data={data} page={page || '1'} />
+          <Body data={data} page={page || '1'} key={page}/>
         </div>
       ) : null;
     }
